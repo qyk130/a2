@@ -27,13 +27,27 @@ public class Quadtree {
 	public Quadtree(int level, Point2D center) {
 		this.level = level;
 		this.center = center;
-		children = new Quadtree[4];
 		links = new ArrayList<Line2D>();
 		chair = new ArrayList<Line2D>();
 		obstacles = new ArrayList<Rectangle2D>();
 		radius = 1.0 / Math.pow(2, level);
 		this.full = false;
 		this.splited = false;
+	}
+	
+	public boolean loadArm(ArmConfig arm) {
+		clear();
+		for(Line2D link: arm.getLinks()) {
+			if(!addObject(link, false)) {
+				return false;
+			}
+		}
+		for(Line2D link: arm.getChair()) {
+			if(!addObject(link, true)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public boolean isValid() {
@@ -132,6 +146,7 @@ public class Quadtree {
 	private void split(){
 		if (!splited && level != MAX_LEVEL) {
 			splited = true;
+			children = new Quadtree[4];
 			Point2D newCenter = new Point2D.Double(center.getX() + radius / 2, center.getY() + radius /2);
 			children[0] = new Quadtree(level + 1, newCenter);
 			newCenter = new Point2D.Double(center.getX() - radius / 2, center.getY() + radius /2);
