@@ -8,11 +8,9 @@ import java.util.Scanner;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
 
-import tester.Tester;
 
 public class Quadtree {
-	private static final int MAX_LEVEL = 5;
-	private static Tester tester = new Tester();
+	private static final int MAX_LEVEL = 2;
 	
 	private int level;
 	private List<Line2D> links;
@@ -37,7 +35,11 @@ public class Quadtree {
 	
 	public boolean loadArm(ArmConfig arm) {
 		clear();
+		Rectangle2D rect = new Rectangle2D.Double(0, 0, 1, 1);
 		for(Line2D link: arm.getLinks()) {
+			if(!(rect.contains(link.getP1())) || !(rect.contains(link.getP2())))  {
+				return false;
+			}
 			if(!addObject(link, false)) {
 				return false;
 			}
@@ -47,7 +49,7 @@ public class Quadtree {
 				return false;
 			}
 		}
-		return true;
+		return isValid();
 	}
 	
 	public boolean isValid() {
@@ -65,16 +67,7 @@ public class Quadtree {
 						return false;
 					}
 				}
-				for(Line2D link2: links) {
-					if (!link.equals(link2)) {
-						if (!link.getP1().equals(link2.getP1()) && !link.getP1().equals(link2.getP2()) && 
-								!link.getP2().equals(link2.getP2()) && !link.getP2().equals(link2.getP1())) {
-							if (link.intersectsLine(link2)) {
-								return false;
-							}
-						}
-					}
-				}
+				
 			}
 			return true;
 		} else {

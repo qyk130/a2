@@ -176,6 +176,13 @@ public class ProblemSpec {
         }
 		output.close();
 	}
+	
+	public void saveSolution(String filename, String s) throws IOException {
+        String ls = System.getProperty("line.separator");
+        FileWriter output = new FileWriter(filename);
+        output.write(s);
+		output.close();
+	}
 
 	/**
 	 * Assumes that a path can be taken directly from the initial configuration

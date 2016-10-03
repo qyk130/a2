@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="a2" default="compile" basedir=".">
+  <target name ="compile">
+    <mkdir dir = "bin"/>
+	<javac srcdir="src" destdir="bin"/>
+  </target>
+  <target name ="makejar" description="Create a jar for ass2">
+    <jar jarfile="a2-3702-s43549636.jar" includes="*.class" basedir="bin">
+	  <manifest>
+	    <attribute name = "Main-Class" value = "problem.Main"/>
+
+	  </manifest>
+	</jar>
+  </target>
+</project>

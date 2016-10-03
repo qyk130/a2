@@ -32,7 +32,7 @@ public class ArmConfig {
 	/** Whether this configuration has a gripper */
 	private boolean gripper;
 	/** Lengths of gripper segments */
-	private List<Double> gripperLengths;
+	public List<Double> gripperLengths;
 
 	
 	/**
@@ -50,26 +50,62 @@ public class ArmConfig {
 		generateChair();
 	}
 	
-	public static ArmConfig randomArm(int jointCount, boolean gripper, int minX, int minY, int maxX, int maxY) {		
-		Point2D base = new Point2D.Double(ThreadLocalRandom.current().nextDouble(minX, maxX),
-				ThreadLocalRandom.current().nextDouble(minY, maxY));
-		List<Double> jointAngles = new ArrayList<Double>();
-		for (int i = 0; i < jointCount; i++) {
-			 jointAngles.add(ThreadLocalRandom.current().nextDouble(-2.61799, 2.61799));
+	public static ArmConfig randomArm(int jointCount, boolean gripper, double minX, double minY, double maxX, double maxY) {	
+		boolean valid = false;
+		ArmConfig returnArm = new ArmConfig(new Point2D.Double(), new ArrayList<Double>());
+		while (!valid) {
+			minX = Double.max(0.05, minX);
+			minY = Double.max(0.05, minY);
+			maxX = Double.min(0.95, maxX);
+			maxY = Double.min(0.95, maxY);
+			if (minX >= maxX || minY >= maxY) {
+				return null;
+			}
+			Point2D base = new Point2D.Double(ThreadLocalRandom.current().nextDouble(minX, maxX),
+					ThreadLocalRandom.current().nextDouble(minY, maxY));
+			List<Double> jointAngles = new ArrayList<Double>();
+			for (int i = 0; i < jointCount; i++) {
+				 jointAngles.add(ThreadLocalRandom.current().nextDouble(-2.61799, 2.61799));
+			}
+			if (!gripper) {
+				returnArm = new ArmConfig(base, jointAngles);
+			} else {
+				List<Double> gripperLengths = new ArrayList<Double>();
+				gripperLengths.add(0.03);
+				gripperLengths.add(0.03);
+				gripperLengths.add(0.03);
+				gripperLengths.add(0.03);
+				returnArm = new ArmConfig(base, jointAngles, gripperLengths);
+			}
+			if (returnArm.isValid()) {
+				valid = true;
+			}
 		}
-		if (!gripper) {
-			return new ArmConfig(base, jointAngles);
-		} else {
-			List<Double> gripperLengths = new ArrayList<Double>();
-			gripperLengths.add(0.03);
-			gripperLengths.add(0.03);
-			gripperLengths.add(0.03);
-			gripperLengths.add(0.03);
-			return new ArmConfig(base, jointAngles, gripperLengths);
-		}
-		
+		return returnArm;
 	}
-
+	
+	public boolean isValid(){
+		for(Line2D link: links) {
+			for(Line2D link2: links) {
+				if (!link.equals(link2)) {
+					if (!link.getP1().equals(link2.getP1()) && !link.getP1().equals(link2.getP2()) && 
+							!link.getP2().equals(link2.getP2()) && !link.getP2().equals(link2.getP1())) {
+						if (link.intersectsLine(link2)) {
+							return false;
+						}
+					}
+				}
+			}
+			if (!link.getP1().equals(this.getBaseCenter())) {
+				for (Line2D clink: chair) {
+					if (link.intersectsLine(clink)) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
 	/**
 	 * Constructor (with gripper)
 	 * @param base
